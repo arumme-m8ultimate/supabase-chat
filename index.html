@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Supabase Chat Sederhana</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <style>
+    body { font-family: sans-serif; padding: 2em; max-width: 420px; margin: auto;}
+    #chat { border:1px solid #eee; padding:1em; min-height:200px; margin-bottom:1em; }
+    #messages { min-height: 120px; }
+    input, button { padding: 0.5em; margin: 0.2em 0;}
+    #userName { width: 70%; }
+    #messageInput { width: 70%; }
+    .sender { font-weight: bold; }
+    .time { color: #aaa; font-size: 0.8em; margin-left: 8px;}
+  </style>
+</head>
+<body>
+  <h1>Chat Supabase 🚀</h1>
+  <div>
+    <label>Nama: <input id="userName" placeholder="Nama kamu"/></label>
+    <button onclick="saveName()">Set Nama</button>
+  </div>
+  <div id="chat">
+    <div id="messages"></div>
+  </div>
+  <form onsubmit="sendMessage(); return false;">
+    <input id="messageInput" placeholder="Ketik pesan..." autocomplete="off"/>
+    <button type="submit">Kirim</button>
+  </form>
+  <script>
+    // Ganti dengan project URL & ANON KEY kamu!
+    const SUPABASE_URL = "https://YOUR_PROJECT.supabase.co";
+    const SUPABASE_ANON_KEY = "YOUR_ANON_KEY";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Session user sederhana
+    let userName = localStorage.getItem("userName") || "";
+    document.getElementById("userName").value = userName;
+
+    function saveName() {
+      userName = document.getElementById("userName").value.trim();
+      localStorage.setItem("userName", userName);
+    }
+
+    // Load pesan
+    async function loadMessages() {
+      const { data, error } = await supabase
+        .from('messages')
+        .select('id,sender_name,content,created_at')
+        .order('created_at', { ascending: true })
+        .limit(50);
+      if (error) {
+        alert("Gagal ambil pesan!");
+        return;
+      }
+      renderMessages(data || []);
+    }
+
+    function renderMessages(msgs) {
+      const el = document.getElementById("messages");
+      el.innerHTML = msgs.map(
+        m => `<div>
+          <span class="sender">${escapeHTML(m.sender_name)}</span>: 
+          <span>${escapeHTML(m.content)}</span>
+          <span class="time">${formatTime(m.created_at)}</span>
+        </div>`
+      ).join("");
+      el.scrollTop = el.scrollHeight;
+    }
+
+    // Kirim pesan
+    async function sendMessage() {
+      const input = document.getElementById("messageInput");
+      if (!userName) return alert("Isi nama dulu!");
+      if (!input.value.trim()) return;
+      const { error } = await supabase
+        .from('messages')
+        .insert([{ sender_name: userName, content: input.value }]);
+      if (error) {
+        alert("Gagal kirim pesan!");
+        return;
+      }
+      input.value = "";
+    }
+
+    // Real-time: update otomatis jika ada pesan baru
+    supabase
+      .channel('public:messages')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
+        loadMessages();
+      })
+      .subscribe();
+
+    // Escape HTML agar aman
+    function escapeHTML(str) {
+      return (str + "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    function formatTime(t) {
+      if (!t) return "";
+      const date = new Date(t);
+      return `${date.getHours().toString().padStart(2,"0")}:${date.getMinutes().toString().padStart(2,"0")}`;
+    }
+
+    // Pertama kali load
+    loadMessages();
+  </script>
+</body>
+</html>
