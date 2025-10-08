@@ -3,469 +3,674 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M8 Messenger - Aplikasi Chat Real</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>M8 Messenger</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --primary: #0084ff;
-            --primary-dark: #0066cc;
-            --secondary: #f0f2f5;
-            --text: #050505;
-            --text-light: #65676b;
-            --white: #ffffff;
-            --border: #e4e6eb;
-            --success: #00ba7c;
-            --error: #f02849;
-        }
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #3498db;
+            --primary-dark: #2980b9;
+            --primary-light: #5dade2;
+            --secondary: #2c3e50;
+            --accent: #e74c3c;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --dark: #34495e;
+            --light: #ecf0f1;
+            --gray: #bdc3c7;
+            --text: #2c3e50;
+            --chat-bg: #e5ddd5;
         }
 
         body {
-            background-color: #f5f7fa;
-            color: var(--text);
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* Auth Styles */
-        .auth-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            padding: 20px;
-        }
-
-        .auth-box {
-            background-color: white;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 450px;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 700;
-            font-size: 24px;
-            color: var(--primary);
-            justify-content: center;
-            margin-bottom: 10px;
-        }
-
-        .auth-form {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .form-label {
-            font-weight: 600;
-            font-size: 14px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            min-height: 100vh;
             color: var(--text);
         }
 
-        .auth-input {
-            padding: 16px;
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            font-size: 15px;
-            outline: none;
-            transition: all 0.2s;
+        .container {
             width: 100%;
+            max-width: 100%;
+            min-height: 100vh;
         }
 
-        .auth-input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(0, 132, 255, 0.1);
-        }
-
-        .auth-button {
-            padding: 16px;
-            background: linear-gradient(135deg, var(--primary), #667eea);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-top: 10px;
-        }
-
-        .auth-button:hover:not(:disabled) {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 132, 255, 0.3);
-        }
-
-        .auth-button:disabled {
-            background: var(--text-light);
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .auth-switch {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 14px;
-            color: var(--text-light);
-        }
-
-        .auth-link {
-            color: var(--primary);
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        .notification {
+        /* SCREEN MANAGEMENT */
+        .screen {
+            display: none;
+            width: 100%;
+            min-height: 100vh;
             position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 16px 24px;
-            border-radius: 12px;
-            color: white;
-            font-weight: 500;
-            z-index: 1000;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            top: 0;
+            left: 0;
+            background: white;
+        }
+
+        .screen.active {
+            display: block;
             animation: slideIn 0.3s ease-out;
         }
 
         @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(100%);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
         }
 
-        .notification.success {
-            background: linear-gradient(135deg, var(--success), #00d2a0);
-        }
-
-        .notification.error {
-            background: linear-gradient(135deg, var(--error), #ff6b6b);
-        }
-
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .pin-display {
-            background: #f8f9fa;
-            border: 2px dashed var(--primary);
-            border-radius: 15px;
-            padding: 30px;
-            text-align: center;
-            margin: 25px 0;
-        }
-
-        .pin-code {
-            font-size: 36px;
-            font-weight: bold;
-            color: var(--primary);
-            letter-spacing: 8px;
-            margin: 15px 0;
-            font-family: 'Courier New', monospace;
-        }
-
-        .pin-warning {
-            background: #fff3cd;
-            border: 2px solid #ffd700;
-            border-radius: 12px;
-            padding: 20px;
-            margin: 25px 0;
-            text-align: center;
-        }
-
-        .pin-input-container {
-            text-align: center;
-            margin: 25px 0;
-        }
-
-        .pin-input-display {
-            font-size: 32px;
-            font-weight: bold;
-            letter-spacing: 12px;
-            padding: 20px;
-            border: 3px solid var(--border);
-            border-radius: 15px;
-            margin: 20px 0;
-            background: #f8f9fa;
-            font-family: 'Courier New', monospace;
-            min-height: 80px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* App Styles */
-        .app-container {
-            display: flex;
-            height: 100vh;
-            max-width: 1400px;
-            margin: 0 auto;
-            background-color: var(--white);
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .sidebar {
-            width: 380px;
-            background-color: var(--white);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .sidebar-header {
-            padding: 25px;
-            border-bottom: 1px solid var(--border);
-            background: linear-gradient(135deg, var(--primary), #667eea);
+        /* HEADER */
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
-        }
-
-        .sidebar-header .logo {
-            color: white;
-            justify-content: flex-start;
-        }
-
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 20px;
-            border-bottom: 1px solid var(--border);
-            background: var(--white);
-        }
-
-        .avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), #667eea);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 20px;
-        }
-
-        .user-info {
-            flex: 1;
-        }
-
-        .user-name {
-            font-weight: 600;
-            font-size: 16px;
-        }
-
-        .user-status {
-            font-size: 13px;
-            color: var(--text-light);
-        }
-
-        .new-chat-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 25px;
-            padding: 15px 25px;
-            margin: 20px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            justify-content: center;
-            transition: all 0.2s;
-        }
-
-        .new-chat-btn:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
-        }
-
-        .search-container {
-            padding: 0 20px 20px;
-        }
-
-        .search-box {
-            display: flex;
-            align-items: center;
-            background-color: var(--secondary);
-            border-radius: 20px;
-            padding: 12px 20px;
-        }
-
-        .search-box i {
-            color: var(--text-light);
-            margin-right: 10px;
-        }
-
-        .search-box input {
-            border: none;
-            background: transparent;
-            outline: none;
-            width: 100%;
-            font-size: 14px;
-        }
-
-        .conversations {
-            flex: 1;
-            overflow-y: auto;
-            padding: 0 20px 20px;
-        }
-
-        .conversation {
-            display: flex;
-            align-items: center;
-            padding: 18px;
-            cursor: pointer;
-            border-radius: 15px;
-            margin-bottom: 8px;
-            transition: all 0.2s;
-            border: 2px solid transparent;
-        }
-
-        .conversation:hover {
-            background-color: var(--secondary);
-        }
-
-        .conversation.active {
-            background: linear-gradient(135deg, #e7f3ff, #f0f7ff);
-            border-color: var(--primary);
-        }
-
-        .conversation-avatar {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 20px;
-            margin-right: 15px;
-        }
-
-        .conversation-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .conversation-name {
-            font-weight: 600;
-            margin-bottom: 5px;
-            font-size: 16px;
-        }
-
-        .conversation-preview {
-            font-size: 14px;
-            color: var(--text-light);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .conversation-time {
-            font-size: 12px;
-            color: var(--text-light);
-            white-space: nowrap;
-        }
-
-        .chat-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background-color: var(--white);
-        }
-
-        .chat-header {
-            padding: 20px 30px;
+            padding: 15px 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border-bottom: 1px solid var(--border);
-            background-color: var(--white);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
-        .chat-user {
+        .header-title {
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .header-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2em;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s ease;
+        }
+
+        .header-btn:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        /* TAB BAR */
+        .tab-bar {
+            display: flex;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.7);
+            cursor: pointer;
+            font-size: 0.9em;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            color: white;
+            border-bottom-color: white;
+        }
+
+        /* WELCOME SCREEN */
+        .welcome-screen {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .welcome-logo {
+            font-size: 4em;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .welcome-title {
+            font-size: 2em;
+            margin-bottom: 15px;
+            font-weight: 300;
+        }
+
+        .welcome-subtitle {
+            font-size: 1.1em;
+            margin-bottom: 40px;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+
+        .welcome-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        .btn {
+            padding: 16px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: white;
+            color: var(--primary);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        /* AUTH SCREENS */
+        .auth-screen {
+            background: white;
+            min-height: 100vh;
+        }
+
+        .auth-form {
+            padding: 30px 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--dark);
+            font-weight: 600;
+            font-size: 1em;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid var(--gray);
+            border-radius: 10px;
+            font-size: 16px;
+            background: white;
+            color: var(--text);
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .auth-links {
+            text-align: center;
+            margin-top: 25px;
+        }
+
+        .auth-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        /* PIN SCREEN */
+        .pin-screen {
+            background: white;
+            min-height: 100vh;
+        }
+
+        .pin-display {
+            background: var(--light);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 20px;
+            text-align: center;
+            border: 2px dashed var(--primary);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        .pin-title {
+            color: var(--text);
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+
+        .pin-code {
+            font-size: 2.5em;
+            font-weight: bold;
+            letter-spacing: 10px;
+            color: var(--primary);
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid var(--primary-light);
+        }
+
+        .copy-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 20px auto;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .countdown {
+            color: var(--accent);
+            font-weight: 600;
+            margin: 15px 0;
+            font-size: 1.1em;
+        }
+
+        /* CHATS SCREEN */
+        .chats-screen {
+            background: white;
+            min-height: 100vh;
+        }
+
+        .search-box {
+            padding: 15px;
+            background: var(--light);
+            border-bottom: 1px solid var(--gray);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--gray);
+            border-radius: 20px;
+            font-size: 0.95em;
+            background: white;
+            color: var(--text);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .chats-list {
+            background: white;
+        }
+
+        .chat-item {
             display: flex;
             align-items: center;
             gap: 15px;
+            padding: 15px;
+            border-bottom: 1px solid var(--light);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .chat-item:hover {
+            background: var(--light);
+        }
+
+        .chat-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2em;
+            border: 3px solid white;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .chat-info {
+            flex: 1;
+        }
+
+        .chat-name {
+            color: var(--dark);
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .chat-preview {
+            color: var(--gray);
+            font-size: 0.9em;
+        }
+
+        .chat-meta {
+            text-align: right;
+        }
+
+        .chat-time {
+            color: var(--gray);
+            font-size: 0.8em;
+            margin-bottom: 5px;
+        }
+
+        .chat-badge {
+            background: var(--accent);
+            color: white;
+            border-radius: 10px;
+            padding: 3px 8px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        /* STATUS SCREEN */
+        .status-screen {
+            background: white;
+            min-height: 100vh;
+        }
+
+        .my-status {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 20px;
+            border-bottom: 1px solid var(--light);
+            cursor: pointer;
+        }
+
+        .status-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2em;
+            border: 2px solid var(--primary-light);
+        }
+
+        .status-info {
+            flex: 1;
+        }
+
+        .status-name {
+            color: var(--dark);
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .status-text {
+            color: var(--gray);
+            font-size: 0.9em;
+        }
+
+        .status-list {
+            padding: 10px 0;
+        }
+
+        .status-section {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            color: var(--gray);
+            font-size: 0.9em;
+            padding: 10px 20px;
+            text-transform: uppercase;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .status-item:hover {
+            background: var(--light);
+        }
+
+        .status-avatar-small {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            position: relative;
+        }
+
+        .status-indicator {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 12px;
+            height: 12px;
+            background: var(--success);
+            border: 2px solid white;
+            border-radius: 50%;
+        }
+
+        /* CALLS SCREEN */
+        .calls-screen {
+            background: white;
+            min-height: 100vh;
+        }
+
+        .call-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--light);
+            transition: background 0.3s ease;
+        }
+
+        .call-item:hover {
+            background: var(--light);
+        }
+
+        .call-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .call-info {
+            flex: 1;
+        }
+
+        .call-name {
+            color: var(--dark);
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .call-details {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--gray);
+            font-size: 0.9em;
+        }
+
+        .call-icon {
+            color: var(--primary);
+        }
+
+        .call-missed {
+            color: var(--accent);
+        }
+
+        .call-time {
+            color: var(--gray);
+            font-size: 0.8em;
+        }
+
+        /* CHAT ROOM SCREEN */
+        .chat-room-screen {
+            background: var(--chat-bg);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2em;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .chat-user-info {
+            flex: 1;
+        }
+
+        .chat-user-name {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .chat-user-status {
+            color: rgba(255,255,255,0.8);
+            font-size: 0.8em;
         }
 
         .chat-actions {
             display: flex;
-            gap: 20px;
-        }
-
-        .chat-actions i {
-            font-size: 22px;
-            color: var(--text-light);
-            cursor: pointer;
-            padding: 10px;
-            border-radius: 50%;
-            transition: all 0.2s;
-        }
-
-        .chat-actions i:hover {
-            background-color: var(--secondary);
-            color: var(--primary);
+            gap: 10px;
         }
 
         .messages-container {
             flex: 1;
-            padding: 30px;
+            padding: 15px;
             overflow-y: auto;
-            background-color: var(--secondary);
+            background: var(--chat-bg);
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 10px;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23bdc3c7' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
         }
 
         .message {
             max-width: 70%;
-            padding: 16px 22px;
-            border-radius: 20px;
+            padding: 12px 15px;
+            border-radius: 15px;
             position: relative;
-            word-wrap: break-word;
             animation: messageAppear 0.3s ease-out;
+            line-height: 1.4;
+            font-size: 0.95em;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
 
         @keyframes messageAppear {
@@ -481,955 +686,1000 @@
 
         .message.sent {
             align-self: flex-end;
-            background: linear-gradient(135deg, var(--primary), #667eea);
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
             border-bottom-right-radius: 5px;
         }
 
         .message.received {
             align-self: flex-start;
-            background-color: var(--white);
+            background: white;
             color: var(--text);
             border-bottom-left-radius: 5px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0,0,0,0.05);
         }
 
         .message-time {
-            font-size: 11px;
+            font-size: 0.7em;
+            opacity: 0.7;
+            margin-top: 5px;
             text-align: right;
-            margin-top: 8px;
-            opacity: 0.8;
+        }
+
+        .received .message-time {
+            text-align: left;
         }
 
         .message-input-container {
-            padding: 25px 30px;
+            padding: 15px;
+            background: white;
+            border-top: 1px solid var(--gray);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            position: sticky;
+            bottom: 0;
+        }
+
+        .emoji-btn {
+            background: none;
+            border: none;
+            color: var(--gray);
+            font-size: 1.3em;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
-            gap: 15px;
-            background-color: var(--white);
-            border-top: 1px solid var(--border);
+            justify-content: center;
+            transition: background 0.3s ease;
+        }
+
+        .emoji-btn:hover {
+            background: var(--light);
         }
 
         .message-input {
             flex: 1;
-            padding: 18px 25px;
-            border: 2px solid var(--border);
-            border-radius: 30px;
-            outline: none;
-            font-size: 15px;
-            transition: all 0.2s;
+            padding: 12px 15px;
+            border: 2px solid var(--gray);
+            border-radius: 25px;
+            font-size: 0.95em;
+            background: white;
+            color: var(--text);
+            transition: all 0.3s ease;
+            min-height: 45px;
+            max-height: 120px;
+            resize: none;
         }
 
         .message-input:focus {
+            outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(0, 132, 255, 0.1);
         }
 
         .send-btn {
-            width: 55px;
-            height: 55px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), #667eea);
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
             border: none;
-            transition: all 0.2s;
-            font-size: 20px;
-        }
-
-        .send-btn:hover:not(:disabled) {
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(0, 132, 255, 0.3);
-        }
-
-        .send-btn:disabled {
-            background: var(--text-light);
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--text-light);
-        }
-
-        .empty-state i {
-            font-size: 64px;
-            margin-bottom: 20px;
-            opacity: 0.5;
-        }
-
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
-            animation: fadeIn 0.3s ease-out;
+            transition: all 0.3s ease;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        .send-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 3px 10px rgba(52, 152, 219, 0.3);
         }
 
-        .modal-content {
+        /* PROFILE SCREEN */
+        .profile-screen {
             background: white;
-            padding: 30px;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 400px;
-            max-height: 80vh;
-            overflow-y: auto;
+            min-height: 100vh;
         }
 
-        .users-list {
-            max-height: 300px;
-            overflow-y: auto;
-            margin: 20px 0;
+        .profile-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            padding: 40px 20px 20px;
+            text-align: center;
         }
 
-        .user-item {
-            padding: 15px;
-            cursor: pointer;
-            border-radius: 12px;
-            margin-bottom: 8px;
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
             display: flex;
             align-items: center;
-            gap: 12px;
-            transition: all 0.2s;
+            justify-content: center;
+            color: white;
+            font-size: 2em;
+            font-weight: bold;
+            margin: 0 auto 15px;
+            border: 4px solid white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
 
-        .user-item:hover {
-            background-color: var(--secondary);
+        .profile-name {
+            color: white;
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 5px;
         }
 
-        @media (max-width: 768px) {
-            .app-container {
-                flex-direction: column;
-            }
-            
-            .sidebar {
-                width: 100%;
-                height: 50vh;
-            }
-            
-            .chat-area {
-                height: 50vh;
-            }
+        .profile-status {
+            color: rgba(255,255,255,0.9);
+            font-size: 0.9em;
+        }
+
+        .profile-content {
+            padding: 20px;
+        }
+
+        .profile-section {
+            background: var(--light);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .profile-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            color: var(--text);
+        }
+
+        .profile-item:last-child {
+            border-bottom: none;
+        }
+
+        .profile-label {
+            font-weight: 600;
+        }
+
+        .profile-value {
+            color: var(--dark);
+            font-weight: 500;
+        }
+
+        .profile-actions {
+            padding: 20px;
+        }
+
+        .logout-btn {
+            width: 100%;
+            padding: 15px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
         }
     </style>
 </head>
 <body>
-    <!-- Auth Screen -->
-    <div id="authScreen" class="auth-container">
-        <div class="auth-box">
-            <!-- Register Form -->
-            <div id="registerForm">
-                <div class="logo">
-                    <i class="fas fa-comments"></i>
-                    <span>M8 Messenger</span>
-                </div>
-                <p style="text-align: center; color: var(--text-light); margin-bottom: 25px;">
-                    Daftar akun baru untuk mulai chat
-                </p>
-
-                <form class="auth-form" id="registerFormElement">
-                    <div class="form-group">
-                        <label class="form-label">Nama Lengkap</label>
-                        <input type="text" id="registerName" class="auth-input" placeholder="Masukkan nama lengkap" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Email</label>
-                        <input type="email" id="registerEmail" class="auth-input" placeholder="email@anda.com" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Nomor HP</label>
-                        <input type="tel" id="registerPhone" class="auth-input" placeholder="08123456789" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Password</label>
-                        <input type="password" id="registerPassword" class="auth-input" placeholder="Minimal 8 karakter" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Konfirmasi Password</label>
-                        <input type="password" id="registerConfirmPassword" class="auth-input" placeholder="Ulangi password" required>
-                    </div>
-
-                    <button type="submit" class="auth-button" id="registerButton">
-                        <span id="registerText">🎯 Daftar & Dapat PIN</span>
-                        <div id="registerLoading" class="loading hidden"></div>
+    <div class="container">
+        <!-- WELCOME SCREEN -->
+        <div id="welcomeScreen" class="screen active">
+            <div class="welcome-screen">
+                <div class="welcome-logo">💬</div>
+                <h1 class="welcome-title">M8 Messenger</h1>
+                <p class="welcome-subtitle">Pesan pribadi yang cepat, sederhana, dan aman dengan tema biru yang menenangkan</p>
+                
+                <div class="welcome-buttons">
+                    <button class="btn btn-primary" onclick="showScreen('registerScreen')">
+                        <i class="fas fa-user-plus"></i> Daftar Akun Baru
                     </button>
-                </form>
-
-                <div class="auth-switch">
-                    Sudah punya akun? <a class="auth-link" id="showLogin">Login dengan PIN</a>
+                    <button class="btn btn-secondary" onclick="showScreen('loginScreen')">
+                        <i class="fas fa-sign-in-alt"></i> Masuk dengan PIN
+                    </button>
                 </div>
             </div>
+        </div>
 
-            <!-- PIN Display -->
-            <div id="pinDisplay" class="hidden">
-                <div class="logo">
-                    <i class="fas fa-key"></i>
-                    <span>PIN Login Anda</span>
+        <!-- REGISTER SCREEN -->
+        <div id="registerScreen" class="screen">
+            <div class="auth-screen">
+                <div class="header">
+                    <button class="header-btn" onclick="showScreen('welcomeScreen')">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <div class="header-title">Daftar Akun Baru</div>
+                    <div class="header-actions"></div>
                 </div>
-                <p style="text-align: center; color: var(--text-light); margin-bottom: 25px;">
-                    Simpan PIN ini untuk login ke aplikasi
-                </p>
+
+                <div class="auth-form">
+                    <form id="registerForm">
+                        <div class="form-group">
+                            <label class="form-label">Nama Lengkap</label>
+                            <input type="text" class="form-input" id="registerName" placeholder="Masukkan nama lengkap" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-input" id="registerEmail" placeholder="email@contoh.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Nomor Telepon</label>
+                            <input type="tel" class="form-input" id="registerPhone" placeholder="+62 812-3456-7890" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Password</label>
+                            <input type="password" class="form-input" id="registerPassword" placeholder="Buat password" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Konfirmasi Password</label>
+                            <input type="password" class="form-input" id="registerConfirmPassword" placeholder="Ulangi password" required>
+                        </div>
+                        <button type="submit" class="auth-btn">
+                            <i class="fas fa-user-plus"></i> Daftar Sekarang
+                        </button>
+                    </form>
+                    
+                    <div class="auth-links">
+                        <a href="#" class="auth-link" onclick="showScreen('loginScreen')">Sudah punya akun? Masuk</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PIN SCREEN -->
+        <div id="pinScreen" class="screen">
+            <div class="pin-screen">
+                <div class="header">
+                    <button class="header-btn" onclick="showScreen('registerScreen')">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <div class="header-title">PIN Akses Anda</div>
+                    <div class="header-actions"></div>
+                </div>
 
                 <div class="pin-display">
-                    <div style="font-size: 16px; color: var(--text-light); margin-bottom: 10px;">PIN Login Anda:</div>
-                    <div class="pin-code" id="generatedPIN">ABCD1234</div>
-                    <div style="color: var(--text-light); font-size: 14px;">Gunakan PIN ini untuk login selanjutnya</div>
-                </div>
-
-                <div class="pin-warning">
-                    <h4 style="color: #856404; margin-bottom: 10px;">⚠️ Simpan PIN Anda!</h4>
-                    <p style="color: #856404; margin: 0;">PIN ini tidak bisa diubah dan akan digunakan untuk login selanjutnya</p>
-                </div>
-
-                <button class="auth-button" onclick="showLoginForm()">
-                    🔐 Login dengan PIN
-                </button>
-            </div>
-
-            <!-- Login Form -->
-            <div id="loginForm" class="hidden">
-                <div class="logo">
-                    <i class="fas fa-comments"></i>
-                    <span>M8 Messenger</span>
-                </div>
-                <p style="text-align: center; color: var(--text-light); margin-bottom: 25px;">
-                    Masuk dengan PIN login Anda
-                </p>
-
-                <form class="auth-form" id="loginFormElement">
-                    <div class="pin-input-container">
-                        <label class="form-label">PIN Login (4 Huruf + 4 Angka)</label>
-                        <div class="pin-input-display" id="pinDisplayField">
-                            _ _ _ _ _ _ _ _
-                        </div>
-                        <input type="text" id="pinInput" class="auth-input" placeholder="Ketik PIN Anda di sini" maxlength="8" 
-                               style="text-align: center; letter-spacing: 8px; font-weight: bold; font-family: 'Courier New', monospace;">
+                    <div class="pin-title">Salin PIN Anda sebelum hilang:</div>
+                    <div class="pin-code" id="generatedPin">M8AB1234</div>
+                    <div class="countdown">
+                        <i class="fas fa-clock"></i> PIN akan hilang dalam: 
+                        <span id="countdown">30</span> detik
                     </div>
-
-                    <button type="submit" class="auth-button" id="loginButton">
-                        <span id="loginText">🚀 Masuk ke Chat</span>
-                        <div id="loginLoading" class="loading hidden"></div>
+                    <button class="copy-btn" onclick="copyPin()">
+                        <i class="fas fa-copy"></i> Salin PIN
                     </button>
-                </form>
+                </div>
 
-                <div class="auth-switch">
-                    Lupa PIN? <a class="auth-link" id="showRegister">Daftar akun baru</a>
+                <div class="auth-links" style="padding: 20px; text-align: center;">
+                    <a href="#" class="auth-link" onclick="showScreen('loginScreen')">Lanjutkan ke Login</a>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Main App -->
-    <div id="app" class="app-container hidden">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <div class="logo">
-                    <i class="fas fa-comments"></i>
-                    <span>M8 Messenger</span>
+        <!-- LOGIN SCREEN -->
+        <div id="loginScreen" class="screen">
+            <div class="auth-screen">
+                <div class="header">
+                    <button class="header-btn" onclick="showScreen('welcomeScreen')">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <div class="header-title">Masuk ke M8</div>
+                    <div class="header-actions"></div>
                 </div>
-            </div>
-            
-            <div class="user-profile">
-                <div class="avatar" id="userAvatar">U</div>
-                <div class="user-info">
-                    <div class="user-name" id="userName">User</div>
-                    <div class="user-status">Online</div>
-                </div>
-                <i class="fas fa-sign-out-alt" id="logoutBtn" title="Keluar" style="color: var(--text-light); cursor: pointer;"></i>
-            </div>
-            
-            <button class="new-chat-btn" id="newChatBtn">
-                <i class="fas fa-plus-circle"></i>
-                Buat Chat Baru
-            </button>
-            
-            <div class="search-container">
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Cari percakapan..." id="searchConversations">
-                </div>
-            </div>
-            
-            <div class="conversations" id="conversationsList">
-                <div class="empty-state">
-                    <i class="fas fa-comments"></i>
-                    <h3>Belum ada percakapan</h3>
-                    <p>Mulai percakapan pertama Anda dengan mengklik tombol di atas</p>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Chat Area -->
-        <div class="chat-area">
-            <div class="chat-header">
-                <div class="chat-user">
-                    <div class="avatar" id="chatUserAvatar">M8</div>
-                    <div>
-                        <div class="user-name" id="chatUserName">M8 Messenger</div>
-                        <div class="user-status" id="chatUserStatus">Selamat datang! Pilih percakapan untuk memulai chat</div>
+
+                <div class="auth-form">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <div style="font-size: 4em; color: var(--primary); margin-bottom: 15px;">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <h3 style="color: var(--dark); margin-bottom: 10px;">Masukkan PIN Anda</h3>
+                        <p style="color: var(--gray);">Gunakan PIN yang Anda dapatkan saat registrasi</p>
+                    </div>
+
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <input type="text" class="form-input" id="loginPin" placeholder="Masukkan PIN 8-digit" 
+                                   style="text-align: center; letter-spacing: 8px; font-weight: bold; font-size: 1.2em;" 
+                                   maxlength="8" required>
+                        </div>
+                        <button type="submit" class="auth-btn">
+                            <i class="fas fa-sign-in-alt"></i> Masuk ke M8
+                        </button>
+                    </form>
+                    
+                    <div class="auth-links">
+                        <a href="#" class="auth-link" onclick="showScreen('registerScreen')">Belum punya akun? Daftar</a>
                     </div>
                 </div>
-                <div class="chat-actions">
-                    <i class="fas fa-phone-alt" title="Panggilan Suara"></i>
-                    <i class="fas fa-video" title="Panggilan Video"></i>
-                    <i class="fas fa-info-circle" title="Info Percakapan"></i>
+            </div>
+        </div>
+
+        <!-- MAIN APP SCREEN -->
+        <div id="mainAppScreen" class="screen">
+            <!-- CHATS TAB -->
+            <div id="chatsTab" class="screen active">
+                <div class="chats-screen">
+                    <div class="header">
+                        <div class="header-title">Chats</div>
+                        <div class="header-actions">
+                            <button class="header-btn" onclick="showScreen('profileScreen')">
+                                <i class="fas fa-user"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="search-box">
+                        <input type="text" class="search-input" placeholder="Cari percakapan...">
+                    </div>
+
+                    <div class="chats-list">
+                        <!-- Chat items will be loaded here -->
+                    </div>
                 </div>
             </div>
-            
-            <div class="messages-container" id="messagesContainer">
-                <div class="message received">
-                    <div class="message-content">Halo! Selamat datang di M8 Messenger. Aplikasi chat real-time yang powerful dan mudah digunakan.</div>
-                    <div class="message-time">Baru saja</div>
-                </div>
-                <div class="message received">
-                    <div class="message-content">Untuk memulai, buat percakapan baru dan mulailah berkomunikasi dengan teman atau kolega Anda.</div>
-                    <div class="message-time">Baru saja</div>
+
+            <!-- STATUS TAB -->
+            <div id="statusTab" class="screen">
+                <div class="status-screen">
+                    <div class="header">
+                        <div class="header-title">Status</div>
+                        <div class="header-actions">
+                            <button class="header-btn">
+                                <i class="fas fa-camera"></i>
+                            </button>
+                            <button class="header-btn">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="my-status">
+                        <div class="status-avatar" id="myStatusAvatar">U</div>
+                        <div class="status-info">
+                            <div class="status-name" id="myStatusName">Status Saya</div>
+                            <div class="status-text">Ketuk untuk menambah status</div>
+                        </div>
+                    </div>
+
+                    <div class="status-list">
+                        <div class="section-title">Status terbaru</div>
+                        <!-- Status items will be loaded here -->
+                    </div>
                 </div>
             </div>
-            
-            <div class="message-input-container">
-                <input type="text" class="message-input" id="messageInput" placeholder="Ketik pesan Anda di sini..." disabled>
-                <button class="send-btn" id="sendButton" disabled>
-                    <i class="fas fa-paper-plane"></i>
+
+            <!-- CALLS TAB -->
+            <div id="callsTab" class="screen">
+                <div class="calls-screen">
+                    <div class="header">
+                        <div class="header-title">Panggilan</div>
+                        <div class="header-actions">
+                            <button class="header-btn">
+                                <i class="fas fa-phone-alt"></i>
+                            </button>
+                            <button class="header-btn">
+                                <i class="fas fa-video"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="calls-list">
+                        <!-- Call items will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB BAR -->
+            <div class="tab-bar" style="position: fixed; bottom: 0; width: 100%;">
+                <button class="tab active" onclick="showTab('chatsTab')">
+                    <i class="fas fa-comments"></i>
                 </button>
+                <button class="tab" onclick="showTab('statusTab')">
+                    <i class="fas fa-circle"></i>
+                </button>
+                <button class="tab" onclick="showTab('callsTab')">
+                    <i class="fas fa-phone"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- CHAT ROOM SCREEN -->
+        <div id="chatRoomScreen" class="screen">
+            <div class="chat-room-screen">
+                <div class="chat-header">
+                    <button class="back-btn" onclick="showTab('chatsTab')">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <div class="chat-user-info">
+                        <div class="chat-user-name" id="chatWithName">Nama Kontak</div>
+                        <div class="chat-user-status" id="chatWithStatus">Online</div>
+                    </div>
+                    <div class="chat-actions">
+                        <button class="header-btn">
+                            <i class="fas fa-phone-alt"></i>
+                        </button>
+                        <button class="header-btn">
+                            <i class="fas fa-video"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="messages-container" id="messagesContainer">
+                    <!-- Messages will be loaded here -->
+                </div>
+
+                <div class="message-input-container">
+                    <button class="emoji-btn">
+                        <i class="far fa-smile"></i>
+                    </button>
+                    <textarea class="message-input" id="messageInput" placeholder="Ketik pesan..." rows="1"></textarea>
+                    <button class="send-btn" onclick="sendMessage()">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PROFILE SCREEN -->
+        <div id="profileScreen" class="screen">
+            <div class="profile-screen">
+                <div class="header">
+                    <button class="header-btn" onclick="showTab('chatsTab')">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <div class="header-title">Profil</div>
+                    <div class="header-actions"></div>
+                </div>
+
+                <div class="profile-header">
+                    <div class="profile-avatar" id="profileAvatar">U</div>
+                    <div class="profile-name" id="profileName">User Name</div>
+                    <div class="profile-status" id="profileStatus">Online</div>
+                </div>
+
+                <div class="profile-content">
+                    <div class="profile-section">
+                        <div class="profile-item">
+                            <div class="profile-label">Nama</div>
+                            <div class="profile-value" id="profileDisplayName">-</div>
+                        </div>
+                        <div class="profile-item">
+                            <div class="profile-label">PIN</div>
+                            <div class="profile-value" id="profilePin">-</div>
+                        </div>
+                        <div class="profile-item">
+                            <div class="profile-label">Bergabung</div>
+                            <div class="profile-value" id="profileJoined">-</div>
+                        </div>
+                        <div class="profile-item">
+                            <div class="profile-label">Status</div>
+                            <div class="profile-value" id="profileActiveStatus">Aktif</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-actions">
+                    <button class="logout-btn" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Supabase Configuration
-        const SUPABASE_URL = 'https://sotpgyxfixkielvufixd.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvdHBneXhmaXhraWVsdnVmaXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk3Mzg5OTUsImV4cCI6MjA3NTMxNDk5NX0.xZjOjAeDI0Iym_up3bLFER5c1uVZPtcpG_mN1NoVn5o';
+        // ==================== M8 MESSENGER - BLUE THEME WHATSAPP STYLE ====================
         
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        // Global State
         let currentUser = null;
-        let currentConversation = null;
+        let currentChat = null;
+        let allUsers = [];
         let conversations = [];
-        let users = [];
-        let realtimeSubscription = null;
+        let pinCountdown = 30;
+        let pinCountdownInterval;
 
-        // Initialize App
+        // Initialize the application
         document.addEventListener('DOMContentLoaded', function() {
-            initializeAuth();
-            initializeAppEvents();
-            checkExistingSession();
+            initializeApp();
+            loadSampleData();
+            
+            // Auto-resize textarea
+            const messageInput = document.getElementById('messageInput');
+            messageInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+            });
         });
 
-        function initializeAuth() {
-            // Form switches
-            document.getElementById('showRegister').addEventListener('click', showRegisterForm);
-            document.getElementById('showLogin').addEventListener('click', showLoginForm);
-
-            // Register form
-            document.getElementById('registerFormElement').addEventListener('submit', handleRegister);
-
-            // Login form
-            document.getElementById('loginFormElement').addEventListener('submit', handleLogin);
-            document.getElementById('pinInput').addEventListener('input', updatePinDisplay);
-
-            // Auto-uppercase untuk PIN input
-            document.getElementById('pinInput').addEventListener('input', function(e) {
-                this.value = this.value.toUpperCase();
-            });
+        function initializeApp() {
+            console.log('🚀 M8 Messenger - Blue Theme Initialized');
+            
+            // Check for existing user session
+            const savedUser = localStorage.getItem('m8_current_user');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                showScreen('mainAppScreen');
+                loadUserData();
+                loadChats();
+            }
         }
 
-        function initializeAppEvents() {
-            // Chat events
-            document.getElementById('sendButton').addEventListener('click', sendMessage);
-            document.getElementById('messageInput').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') sendMessage();
+        function loadSampleData() {
+            // Load existing users from localStorage or create sample data
+            const users = JSON.parse(localStorage.getItem('m8_users') || '[]');
+            allUsers = users;
+            
+            if (allUsers.length === 0) {
+                allUsers = [
+                    {
+                        id: 'user_1',
+                        name: 'Budi Santoso',
+                        email: 'budi@example.com',
+                        phone: '+62 811-2233-4455',
+                        pin: 'BUDI1234',
+                        avatar: 'B',
+                        joined: '15 Mar 2024',
+                        status: 'Online'
+                    },
+                    {
+                        id: 'user_2', 
+                        name: 'Sari Indah',
+                        email: 'sari@example.com',
+                        phone: '+62 822-3344-5566',
+                        pin: 'SARI5678',
+                        avatar: 'S',
+                        joined: '20 Mar 2024',
+                        status: 'Online'
+                    },
+                    {
+                        id: 'user_3',
+                        name: 'Rizki Pratama',
+                        email: 'rizki@example.com',
+                        phone: '+62 833-4455-6677',
+                        pin: 'RIZK9012',
+                        avatar: 'R',
+                        joined: '25 Mar 2024',
+                        status: 'Offline'
+                    }
+                ];
+                localStorage.setItem('m8_users', JSON.stringify(allUsers));
+            }
+
+            // Load sample conversations
+            conversations = [
+                {
+                    id: 'chat_1',
+                    userId: 'user_1',
+                    lastMessage: 'Halo, apa kabar?',
+                    lastTime: '10:30',
+                    unread: 2
+                },
+                {
+                    id: 'chat_2',
+                    userId: 'user_2', 
+                    lastMessage: 'Terima kasih atas bantuannya!',
+                    lastTime: '09:15',
+                    unread: 0
+                },
+                {
+                    id: 'chat_3',
+                    userId: 'user_3',
+                    lastMessage: 'Besok kita meeting jam 10',
+                    lastTime: 'Kemarin',
+                    unread: 1
+                }
+            ];
+        }
+
+        // Screen management
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+            
+            if (screenId === 'mainAppScreen') {
+                showTab('chatsTab');
+            }
+        }
+
+        function showTab(tabId) {
+            // Hide all tabs
+            document.querySelectorAll('#mainAppScreen > .screen').forEach(tab => {
+                tab.classList.remove('active');
             });
             
-            // UI events
-            document.getElementById('newChatBtn').addEventListener('click', showUsersModal);
-            document.getElementById('logoutBtn').addEventListener('click', handleLogout);
-            document.getElementById('searchConversations').addEventListener('input', filterConversations);
-        }
-
-        // Auth Functions
-        function showRegisterForm() {
-            document.getElementById('loginForm').classList.add('hidden');
-            document.getElementById('registerForm').classList.remove('hidden');
-            document.getElementById('pinDisplay').classList.add('hidden');
-            resetRegisterForm();
-        }
-
-        function showLoginForm() {
-            document.getElementById('registerForm').classList.add('hidden');
-            document.getElementById('pinDisplay').classList.add('hidden');
-            document.getElementById('loginForm').classList.remove('hidden');
-            resetLoginForm();
-        }
-
-        function showPinDisplay(pin) {
-            document.getElementById('registerForm').classList.add('hidden');
-            document.getElementById('loginForm').classList.add('hidden');
-            document.getElementById('pinDisplay').classList.remove('hidden');
-            document.getElementById('generatedPIN').textContent = pin;
-        }
-
-        // Generate PIN: 4 Huruf + 4 Angka
-        function generatePIN() {
-            const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; // tanpa I,O
-            const numbers = '23456789'; // tanpa 0,1
+            // Show selected tab
+            document.getElementById(tabId).classList.add('active');
             
-            let pin = '';
-            // 4 huruf random
-            for (let i = 0; i < 4; i++) {
-                pin += letters[Math.floor(Math.random() * letters.length)];
+            // Update tab buttons
+            document.querySelectorAll('.tab-bar .tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Load appropriate data
+            if (tabId === 'chatsTab') {
+                loadChats();
+            } else if (tabId === 'statusTab') {
+                loadStatus();
+            } else if (tabId === 'callsTab') {
+                loadCalls();
             }
-            // 4 angka random  
-            for (let i = 0; i < 4; i++) {
-                pin += numbers[Math.floor(Math.random() * numbers.length)];
-            }
-            return pin;
         }
 
-        // Register Handler
-        async function handleRegister(e) {
+        // Authentication
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
             e.preventDefault();
-
-            const name = document.getElementById('registerName').value.trim();
-            const email = document.getElementById('registerEmail').value.trim();
-            const phone = document.getElementById('registerPhone').value.trim();
+            
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const phone = document.getElementById('registerPhone').value;
             const password = document.getElementById('registerPassword').value;
             const confirmPassword = document.getElementById('registerConfirmPassword').value;
 
-            // Validasi
             if (!name || !email || !phone || !password || !confirmPassword) {
-                showNotification('Semua field harus diisi', 'error');
+                alert('Harap isi semua field!');
                 return;
             }
 
             if (password !== confirmPassword) {
-                showNotification('Password tidak cocok', 'error');
+                alert('Password dan konfirmasi password tidak cocok!');
                 return;
             }
 
-            if (password.length < 8) {
-                showNotification('Password minimal 8 karakter', 'error');
-                return;
-            }
+            // Generate secure PIN (4 huruf + 4 angka)
+            const pin = generateSecurePIN();
+            
+            // Create user object
+            currentUser = {
+                id: 'user_' + Date.now(),
+                name: name,
+                email: email,
+                phone: phone,
+                pin: pin,
+                avatar: name.charAt(0).toUpperCase(),
+                joined: new Date().toLocaleDateString('id-ID'),
+                status: 'Online'
+            };
 
-            showLoading('register');
+            // Add to all users
+            allUsers.push(currentUser);
+            localStorage.setItem('m8_users', JSON.stringify(allUsers));
+            localStorage.setItem('m8_current_user', JSON.stringify(currentUser));
 
-            try {
-                // 1. Register user di Supabase Auth
-                const { data: authData, error: authError } = await supabase.auth.signUp({
-                    email: email,
-                    password: password
-                });
+            // Show PIN screen with countdown
+            document.getElementById('generatedPin').textContent = pin;
+            showScreen('pinScreen');
+            startPinCountdown();
+        });
 
-                if (authError) throw authError;
-
-                // 2. Generate PIN unik
-                const loginPIN = generatePIN();
-
-                // 3. Simpan user data ke table users
-                const { data: userData, error: userError } = await supabase
-                    .from('users')
-                    .insert({
-                        id: authData.user.id,
-                        name: name,
-                        email: email,
-                        phone: phone,
-                        login_pin: loginPIN,
-                        created_at: new Date()
-                    })
-                    .select()
-                    .single();
-
-                if (userError) throw userError;
-
-                // 4. Show PIN to user
-                showPinDisplay(loginPIN);
-                showNotification('Registrasi berhasil! PIN telah dibuat.', 'success');
-
-            } catch (error) {
-                console.error('Register error:', error);
-                if (error.message.includes('already registered')) {
-                    showNotification('Email sudah terdaftar. Silakan login.', 'error');
-                } else {
-                    showNotification('Registrasi gagal: ' + error.message, 'error');
-                }
-            } finally {
-                hideLoading('register');
-            }
-        }
-
-        // Login Handler
-        async function handleLogin(e) {
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
-
-            const pin = document.getElementById('pinInput').value.trim().toUpperCase();
+            
+            const pin = document.getElementById('loginPin').value.toUpperCase();
 
             if (pin.length !== 8) {
-                showNotification('PIN harus 8 karakter (4 huruf + 4 angka)', 'error');
+                alert('PIN harus 8 karakter!');
                 return;
             }
 
-            showLoading('login');
+            const user = allUsers.find(u => u.pin === pin);
 
-            try {
-                // 1. Cari user berdasarkan PIN
-                const { data: user, error: userError } = await supabase
-                    .from('users')
-                    .select('*')
-                    .eq('login_pin', pin)
-                    .single();
-
-                if (userError || !user) {
-                    throw new Error('PIN tidak valid atau tidak ditemukan');
-                }
-
-                // 2. Set current user
-                currentUser = user;
-
-                // 3. Show app
-                showApp();
-                showNotification('Login berhasil! Selamat datang ' + user.name, 'success');
-
-            } catch (error) {
-                console.error('Login error:', error);
-                showNotification('Login gagal: ' + error.message, 'error');
-            } finally {
-                hideLoading('login');
-            }
-        }
-
-        function updatePinDisplay() {
-            const pinInput = document.getElementById('pinInput');
-            const pinDisplay = document.getElementById('pinDisplayField');
-            const pinValue = pinInput.value.toUpperCase();
-            
-            // Format display
-            let display = '';
-            for (let i = 0; i < 8; i++) {
-                if (i < pinValue.length) {
-                    display += pinValue[i];
-                } else {
-                    display += '_';
-                }
-                if (i < 7) display += ' ';
-            }
-            pinDisplay.textContent = display;
-        }
-
-        // App Functions
-        function showApp() {
-            document.getElementById('authScreen').classList.add('hidden');
-            document.getElementById('app').classList.remove('hidden');
-            
-            // Update UI
-            document.getElementById('userName').textContent = currentUser.name;
-            document.getElementById('userAvatar').textContent = currentUser.avatar || currentUser.name.charAt(0).toUpperCase();
-            
-            // Load data
-            loadUsers();
-            loadConversations();
-        }
-
-        async function loadUsers() {
-            try {
-                const { data, error } = await supabase
-                    .from('users')
-                    .select('*')
-                    .neq('id', currentUser.id);
-
-                if (!error) {
-                    users = data || [];
-                }
-            } catch (error) {
-                console.error('Error loading users:', error);
-                users = [];
-            }
-        }
-
-        async function loadConversations() {
-            try {
-                const { data, error } = await supabase
-                    .from('conversations')
-                    .select(`
-                        *,
-                        conversation_members!inner(user_id)
-                    `)
-                    .eq('conversation_members.user_id', currentUser.id)
-                    .order('last_activity', { ascending: false });
-
-                if (!error) {
-                    conversations = data || [];
-                    renderConversations();
-                }
-            } catch (error) {
-                console.error('Error loading conversations:', error);
-                conversations = [];
-                renderConversations();
-            }
-        }
-
-        function renderConversations() {
-            const container = document.getElementById('conversationsList');
-            
-            if (conversations.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-comments"></i>
-                        <h3>Belum ada percakapan</h3>
-                        <p>Mulai percakapan pertama Anda dengan mengklik tombol di atas</p>
-                    </div>
-                `;
+            if (!user) {
+                alert('PIN tidak valid!');
                 return;
             }
 
-            container.innerHTML = conversations.map(conv => `
-                <div class="conversation" data-id="${conv.id}">
-                    <div class="conversation-avatar">${conv.avatar || conv.name.charAt(0).toUpperCase()}</div>
-                    <div class="conversation-info">
-                        <div class="conversation-name">${conv.name}</div>
-                        <div class="conversation-preview">Klik untuk membuka chat</div>
-                    </div>
-                    <div class="conversation-time">${formatTime(conv.last_activity)}</div>
-                </div>
-            `).join('');
+            currentUser = user;
+            localStorage.setItem('m8_current_user', JSON.stringify(currentUser));
+            
+            showScreen('mainAppScreen');
+            loadUserData();
+            loadChats();
+        });
 
-            // Add click events
-            container.querySelectorAll('.conversation').forEach(conv => {
-                conv.addEventListener('click', () => selectConversation(conv.dataset.id));
+        function generateSecurePIN() {
+            const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+            const numbers = '23456789';
+            
+            let pin = 'M8'; // Prefix M8
+            
+            // 3 random letters
+            for (let i = 0; i < 3; i++) {
+                pin += letters[Math.floor(Math.random() * letters.length)];
+            }
+            
+            // 3 random numbers
+            for (let i = 0; i < 3; i++) {
+                pin += numbers[Math.floor(Math.random() * numbers.length)];
+            }
+            
+            return pin;
+        }
+
+        // PIN Functions
+        function startPinCountdown() {
+            pinCountdown = 30;
+            document.getElementById('countdown').textContent = pinCountdown;
+            
+            if (pinCountdownInterval) {
+                clearInterval(pinCountdownInterval);
+            }
+            
+            pinCountdownInterval = setInterval(() => {
+                pinCountdown--;
+                document.getElementById('countdown').textContent = pinCountdown;
+                
+                if (pinCountdown <= 0) {
+                    clearInterval(pinCountdownInterval);
+                    showScreen('loginScreen');
+                    alert('PIN telah kadaluarsa! Silakan daftar ulang.');
+                }
+            }, 1000);
+        }
+
+        function copyPin() {
+            const pin = document.getElementById('generatedPin').textContent;
+            navigator.clipboard.writeText(pin).then(() => {
+                alert('PIN berhasil disalin! Simpan di tempat aman.');
+            }).catch(err => {
+                alert('Gagal menyalin PIN: ' + err);
             });
         }
 
-        async function selectConversation(conversationId) {
-            currentConversation = conversationId;
-            const conversation = conversations.find(c => c.id === conversationId);
-
-            // Update UI
-            document.querySelectorAll('.conversation').forEach(c => c.classList.remove('active'));
-            document.querySelector(`.conversation[data-id="${conversationId}"]`).classList.add('active');
-
-            document.getElementById('chatUserName').textContent = conversation.name;
-            document.getElementById('chatUserAvatar').textContent = conversation.avatar || conversation.name.charAt(0).toUpperCase();
-            document.getElementById('chatUserStatus').textContent = 'Online';
-
-            // Load messages
-            await loadMessages(conversationId);
-
-            // Enable input
-            document.getElementById('messageInput').disabled = false;
-            document.getElementById('sendButton').disabled = false;
-
-            // Setup realtime
-            setupRealtimeSubscription(conversationId);
+        // User data management
+        function loadUserData() {
+            if (currentUser) {
+                document.getElementById('profileName').textContent = currentUser.name;
+                document.getElementById('profileAvatar').textContent = currentUser.avatar;
+                document.getElementById('profileDisplayName').textContent = currentUser.name;
+                document.getElementById('profilePin').textContent = currentUser.pin;
+                document.getElementById('profileJoined').textContent = currentUser.joined;
+                document.getElementById('profileStatus').textContent = currentUser.status;
+                
+                // Update status tab
+                document.getElementById('myStatusName').textContent = currentUser.name;
+                document.getElementById('myStatusAvatar').textContent = currentUser.avatar;
+            }
         }
 
-        async function loadMessages(conversationId) {
-            try {
-                const { data, error } = await supabase
-                    .from('messages')
-                    .select('*')
-                    .eq('conversation_id', conversationId)
-                    .order('created_at', { ascending: true });
+        // Chat functionality
+        function loadChats() {
+            const container = document.querySelector('.chats-list');
+            if (!container) return;
+            
+            container.innerHTML = '';
 
-                if (!error) {
-                    const container = document.getElementById('messagesContainer');
-                    container.innerHTML = '';
-
-                    data.forEach(msg => {
-                        const messageDiv = document.createElement('div');
-                        const isSent = msg.sender === currentUser.id;
-                        messageDiv.className = `message ${isSent ? 'sent' : 'received'}`;
-                        messageDiv.innerHTML = `
-                            <div class="message-content">${msg.content}</div>
-                            <div class="message-time">${formatTime(msg.created_at)}</div>
-                        `;
-                        container.appendChild(messageDiv);
-                    });
-
-                    container.scrollTop = container.scrollHeight;
+            conversations.forEach(conv => {
+                const user = allUsers.find(u => u.id === conv.userId);
+                if (user) {
+                    const chatElement = createChatElement(user, conv);
+                    container.appendChild(chatElement);
                 }
-            } catch (error) {
-                console.error('Error loading messages:', error);
-            }
+            });
         }
 
-        async function sendMessage() {
-            const input = document.getElementById('messageInput');
-            const content = input.value.trim();
-
-            if (!content || !currentConversation) return;
-
-            try {
-                const { error } = await supabase
-                    .from('messages')
-                    .insert({
-                        conversation_id: currentConversation,
-                        content: content,
-                        sender: currentUser.id,
-                        created_at: new Date()
-                    });
-
-                if (error) throw error;
-
-                input.value = '';
-                await loadMessages(currentConversation);
-
-                // Update last activity
-                await supabase
-                    .from('conversations')
-                    .update({ last_activity: new Date() })
-                    .eq('id', currentConversation);
-
-                await loadConversations(); // Refresh conversation list
-
-            } catch (error) {
-                console.error('Error sending message:', error);
-                showNotification('Gagal mengirim pesan', 'error');
-            }
-        }
-
-        function setupRealtimeSubscription(conversationId) {
-            if (realtimeSubscription) {
-                supabase.removeChannel(realtimeSubscription);
-            }
-
-            realtimeSubscription = supabase
-                .channel('messages')
-                .on('postgres_changes', 
-                    { 
-                        event: 'INSERT', 
-                        schema: 'public', 
-                        table: 'messages',
-                        filter: `conversation_id=eq.${conversationId}`
-                    }, 
-                    (payload) => {
-                        if (payload.new.sender !== currentUser.id) {
-                            loadMessages(conversationId);
-                            loadConversations(); // Update conversation list
-                        }
-                    }
-                )
-                .subscribe();
-        }
-
-        function showUsersModal() {
-            if (users.length === 0) {
-                showNotification('Belum ada pengguna lain yang terdaftar', 'error');
-                return;
-            }
-
-            const modal = document.createElement('div');
-            modal.className = 'modal';
-            modal.innerHTML = `
-                <div class="modal-content">
-                    <h3 style="margin-bottom: 20px; text-align: center;">Pilih Pengguna untuk Chat</h3>
-                    <div class="users-list">
-                        ${users.map(user => `
-                            <div class="user-item" data-id="${user.id}">
-                                <div class="avatar" style="width: 45px; height: 45px; font-size: 18px;">${user.avatar || user.name.charAt(0).toUpperCase()}</div>
-                                <div>
-                                    <div style="font-weight: 600;">${user.name}</div>
-                                    <div style="font-size: 13px; color: #666;">${user.email}</div>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                    <button onclick="this.closest('.modal').remove()" style="width: 100%; padding: 15px; background: #f0f2f5; border: none; border-radius: 12px; cursor: pointer; margin-top: 20px;">
-                        Tutup
-                    </button>
+        function createChatElement(user, conversation) {
+            const chatElement = document.createElement('div');
+            chatElement.className = 'chat-item';
+            chatElement.onclick = () => openChat(user);
+            
+            const unreadBadge = conversation.unread > 0 ? 
+                `<div class="chat-badge">${conversation.unread}</div>` : '';
+            
+            chatElement.innerHTML = `
+                <div class="chat-avatar">${user.avatar}</div>
+                <div class="chat-info">
+                    <div class="chat-name">${user.name}</div>
+                    <div class="chat-preview">${conversation.lastMessage}</div>
+                </div>
+                <div class="chat-meta">
+                    <div class="chat-time">${conversation.lastTime}</div>
+                    ${unreadBadge}
                 </div>
             `;
-
-            document.body.appendChild(modal);
-
-            // Add event listeners
-            modal.querySelectorAll('.user-item').forEach(item => {
-                item.addEventListener('click', async () => {
-                    const userId = item.dataset.id;
-                    const user = users.find(u => u.id === userId);
-                    await createConversation(user);
-                    modal.remove();
-                });
-            });
-
-            // Close modal on background click
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) modal.remove();
-            });
+            
+            return chatElement;
         }
 
-        async function createConversation(user) {
-            try {
-                // Cek apakah conversation sudah ada
-                const { data: existingConvs } = await supabase
-                    .from('conversations')
-                    .select(`
-                        *,
-                        conversation_members!inner(user_id)
-                    `)
-                    .eq('conversation_members.user_id', currentUser.id)
-                    .eq('type', 'direct');
+        function openChat(user) {
+            currentChat = user;
+            showScreen('chatRoomScreen');
+            
+            document.getElementById('chatWithName').textContent = user.name;
+            document.getElementById('chatWithStatus').textContent = user.status;
+            
+            loadMessages();
+        }
 
-                const existingConv = existingConvs?.find(conv => 
-                    conv.conversation_members.some(member => member.user_id === user.id)
-                );
+        function loadMessages() {
+            const container = document.getElementById('messagesContainer');
+            container.innerHTML = '';
 
-                if (existingConv) {
-                    selectConversation(existingConv.id);
-                    showNotification('Percakapan sudah ada');
-                    return;
-                }
+            // Add welcome message
+            addSystemMessage(`Anda memulai percakapan dengan ${currentChat.name}`);
+            
+            // Simulate some existing messages
+            setTimeout(() => {
+                addMessage('Halo! Ada yang bisa saya bantu?', 'received', currentChat.name);
+            }, 500);
+        }
 
-                // Buat conversation baru
-                const { data: conversation, error } = await supabase
-                    .from('conversations')
-                    .insert({
-                        name: user.name,
-                        avatar: user.avatar || user.name.charAt(0).toUpperCase(),
-                        type: 'direct',
-                        created_by: currentUser.id,
-                        last_activity: new Date()
-                    })
-                    .select()
-                    .single();
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const content = input.value.trim();
+            
+            if (!content || !currentUser || !currentChat) return;
 
-                if (error) throw error;
-
-                // Tambahkan members
-                await supabase.from('conversation_members').insert([
-                    { conversation_id: conversation.id, user_id: currentUser.id },
-                    { conversation_id: conversation.id, user_id: user.id }
-                ]);
-
-                // Pesan selamat datang
-                await supabase.from('messages').insert({
-                    conversation_id: conversation.id,
-                    content: `Halo! Anda sekarang terhubung dengan ${user.name} di M8 Messenger. Mulai percakapan sekarang!`,
-                    sender: 'system',
-                    created_at: new Date()
-                });
-
-                // Refresh dan pilih conversation
-                await loadConversations();
-                selectConversation(conversation.id);
-                showNotification(`Percakapan dengan ${user.name} berhasil dibuat`, 'success');
-
-            } catch (error) {
-                console.error('Error creating conversation:', error);
-                showNotification('Gagal membuat percakapan', 'error');
+            // Add message to UI
+            addMessage(content, 'sent');
+            
+            // Clear and reset input
+            input.value = '';
+            input.style.height = 'auto';
+            
+            // Simulate reply if the user is online
+            if (currentChat.status === 'Online') {
+                setTimeout(() => {
+                    const replies = [
+                        "Halo! Terima kasih sudah menghubungi",
+                        "Wah, pesan yang menarik!",
+                        "Saya akan membalas pesan Anda segera",
+                        "Terima kasih atas pesannya!"
+                    ];
+                    const randomReply = replies[Math.floor(Math.random() * replies.length)];
+                    addMessage(randomReply, 'received', currentChat.name);
+                }, 1000 + Math.random() * 2000);
             }
         }
 
-        // Utility Functions
-        function showNotification(message, type = 'success') {
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.textContent = message;
-            document.body.appendChild(notification);
-            setTimeout(() => notification.remove(), 4000);
-        }
-
-        function showLoading(type) {
-            document.getElementById(`${type}Text`).classList.add('hidden');
-            document.getElementById(`${type}Loading`).classList.remove('hidden');
-            document.getElementById(`${type}Button`).disabled = true;
-        }
-
-        function hideLoading(type) {
-            document.getElementById(`${type}Text`).classList.remove('hidden');
-            document.getElementById(`${type}Loading`).classList.add('hidden');
-            document.getElementById(`${type}Button`).disabled = false;
-        }
-
-        function formatTime(dateString) {
-            if (!dateString) return '';
+        function addMessage(content, type, sender = null) {
+            const container = document.getElementById('messagesContainer');
             
-            const date = new Date(dateString);
-            const now = new Date();
-            const diffMs = now - date;
-            const diffMins = Math.floor(diffMs / 60000);
-            const diffHours = Math.floor(diffMs / 3600000);
-            const diffDays = Math.floor(diffMs / 86400000);
-
-            if (diffMins < 1) return 'Baru saja';
-            if (diffMins < 60) return `${diffMins}m`;
-            if (diffHours < 24) return `${diffHours}j`;
-            if (diffDays < 7) return `${diffDays}h`;
+            // Remove welcome message if it's the first message
+            if (container.children.length === 1 && container.children[0].style.textAlign === 'center') {
+                container.innerHTML = '';
+            }
             
-            return date.toLocaleDateString('id-ID');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            
+            const time = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            
+            messageDiv.innerHTML = `
+                <div>${content}</div>
+                <div class="message-time">${time}</div>
+            `;
+            
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
         }
 
-        function filterConversations() {
-            const searchTerm = document.getElementById('searchConversations').value.toLowerCase();
-            const conversationElements = document.querySelectorAll('.conversation');
+        function addSystemMessage(content) {
+            const container = document.getElementById('messagesContainer');
+            const systemDiv = document.createElement('div');
+            systemDiv.style.textAlign = 'center';
+            systemDiv.style.margin = '20px 0';
+            systemDiv.style.color = 'var(--gray)';
+            systemDiv.style.fontSize = '0.85em';
+            systemDiv.style.fontStyle = 'italic';
+            systemDiv.style.padding = '10px';
+            systemDiv.style.background = 'rgba(255,255,255,0.5)';
+            systemDiv.style.borderRadius = '10px';
+            systemDiv.textContent = content;
+            container.appendChild(systemDiv);
+        }
+
+        // Status functionality
+        function loadStatus() {
+            const container = document.querySelector('.status-list');
+            if (!container) return;
             
-            conversationElements.forEach(element => {
-                const name = element.querySelector('.conversation-name').textContent.toLowerCase();
-                if (name.includes(searchTerm)) {
-                    element.style.display = 'flex';
-                } else {
-                    element.style.display = 'none';
-                }
+            // Clear existing status except title
+            const title = container.querySelector('.section-title');
+            container.innerHTML = '';
+            if (title) container.appendChild(title);
+            
+            // Add status from other users
+            const otherUsers = allUsers.filter(user => user.id !== currentUser?.id);
+            otherUsers.forEach(user => {
+                const statusElement = createStatusElement(user);
+                container.appendChild(statusElement);
             });
         }
 
-        async function handleLogout() {
-            await supabase.auth.signOut();
-            location.reload();
+        function createStatusElement(user) {
+            const statusElement = document.createElement('div');
+            statusElement.className = 'status-item';
+            statusElement.onclick = () => viewStatus(user);
+            
+            statusElement.innerHTML = `
+                <div class="status-avatar-small">
+                    ${user.avatar}
+                    <div class="status-indicator"></div>
+                </div>
+                <div class="status-info">
+                    <div class="status-name">${user.name}</div>
+                    <div class="status-text">Baru saja</div>
+                </div>
+            `;
+            
+            return statusElement;
         }
 
-        function resetRegisterForm() {
-            document.getElementById('registerFormElement').reset();
+        function viewStatus(user) {
+            alert(`Melihat status ${user.name}`);
         }
 
-        function resetLoginForm() {
-            document.getElementById('loginFormElement').reset();
-            document.getElementById('pinDisplayField').textContent = '_ _ _ _ _ _ _ _';
+        // Calls functionality
+        function loadCalls() {
+            const container = document.querySelector('.calls-list');
+            if (!container) return;
+            
+            container.innerHTML = '';
+
+            // Sample call history
+            const calls = [
+                { user: allUsers[0], type: 'outgoing', time: '10:30', missed: false },
+                { user: allUsers[1], type: 'incoming', time: '09:15', missed: true },
+                { user: allUsers[2], type: 'outgoing', time: 'Kemarin', missed: false }
+            ];
+            
+            calls.forEach(call => {
+                const callElement = createCallElement(call);
+                container.appendChild(callElement);
+            });
         }
 
-        async function checkExistingSession() {
-            const { data } = await supabase.auth.getSession();
-            if (data.session) {
-                // Get user data
-                const { data: user } = await supabase
-                    .from('users')
-                    .select('*')
-                    .eq('id', data.session.user.id)
-                    .single();
-                
-                if (user) {
-                    currentUser = user;
-                    showApp();
-                }
+        function createCallElement(call) {
+            const callElement = document.createElement('div');
+            callElement.className = 'call-item';
+            
+            const callIcon = call.type === 'outgoing' ? 'fa-phone-alt' : 'fa-phone';
+            const callColor = call.missed ? 'call-missed' : 'call-icon';
+            const callText = call.missed ? 'Terlewat' : (call.type === 'outgoing' ? 'Keluar' : 'Masuk');
+            
+            callElement.innerHTML = `
+                <div class="call-avatar">${call.user.avatar}</div>
+                <div class="call-info">
+                    <div class="call-name">${call.user.name}</div>
+                    <div class="call-details">
+                        <i class="fas ${callIcon} ${callColor}"></i>
+                        <span class="${callColor}">${callText}</span>
+                    </div>
+                </div>
+                <div class="call-time">${call.time}</div>
+            `;
+            
+            return callElement;
+        }
+
+        // Other functions
+        function logout() {
+            if (confirm('Yakin ingin logout?')) {
+                currentUser = null;
+                localStorage.removeItem('m8_current_user');
+                showScreen('welcomeScreen');
             }
         }
 
-        // Add Font Awesome for icons
-        const faLink = document.createElement('link');
-        faLink.rel = 'stylesheet';
-        faLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
-        document.head.appendChild(faLink);
+        console.log('💙 M8 Messenger - Blue Theme WhatsApp Style Ready!');
     </script>
 </body>
 </html>
